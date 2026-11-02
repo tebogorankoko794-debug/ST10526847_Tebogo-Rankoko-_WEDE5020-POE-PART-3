@@ -1,0 +1,30 @@
+/* Kelly's Burger - Part 3 JavaScript
+   Product rendering, search, sorting, image lightbox, accordion and form validation. */
+"use strict";
+const products=[
+{name:"Classic Burger",description:"A tasty everyday burger option.",price:66,category:"Burgers"},
+{name:"Cheese Burger",description:"A burger served with cheese.",price:66,category:"Burgers"},
+{name:"Russian Burger",description:"A filling burger with Russian.",price:75,category:"Burgers"},
+{name:"Russian Double Burger",description:"A burger with Russian and a double portion.",price:120,category:"Burgers"},
+{name:"Vienna Beef Burger",description:"A burger with Vienna and beef.",price:82,category:"Burgers"},
+{name:"Coca-Cola 2L",description:"A 2 litre cold drink.",price:23,category:"Drinks"},
+{name:"Sprite 2L",description:"A 2 litre lemon-lime drink.",price:23,category:"Drinks"},
+{name:"Fanta 2L",description:"A 2 litre orange drink.",price:23,category:"Drinks"},
+{name:"Kota Chips",description:"A simple chips meal.",price:12,category:"Food"},
+{name:"Polony",description:"Polony serving.",price:12,category:"Food"},
+{name:"Ice Cream Cup",description:"A sweet ice-cream treat.",price:20,category:"Ice Cream"},
+{name:"Ice Cream Cone",description:"A refreshing cone treat.",price:18,category:"Ice Cream"}
+];
+const money=value=>"R"+Number(value).toFixed(2);
+function productCard(item){const picture=item.category==="Burgers"?`<img src="images/featured-burger.jpg" alt="${item.name} burger" loading="lazy">`:`<span>${item.category}</span>`;return `<article class="product-card"><div class="product-image">${picture}</div><span class="tag">${item.category}</span><h3>${item.name}</h3><p>${item.description}</p><div class="product-actions"><span class="price">${money(item.price)}</span><a class="button" href="enquiries.html">Enquire</a></div></article>`;}
+function renderProducts(list,target){if(!target)return;target.innerHTML=list.length?list.map(productCard).join(""):'<p class="empty-state">No products match your search. Try another word or category.</p>';}
+function setupProducts(){const grid=document.getElementById("productGrid");if(!grid)return;const search=document.getElementById("productSearch"),category=document.getElementById("categoryFilter"),sort=document.getElementById("sortProducts");function update(){let list=products.filter(p=>(p.name+" "+p.description).toLowerCase().includes(search.value.toLowerCase())&&(category.value==="all"||p.category===category.value));if(sort.value==="low")list.sort((a,b)=>a.price-b.price);if(sort.value==="high")list.sort((a,b)=>b.price-a.price);if(sort.value==="name")list.sort((a,b)=>a.name.localeCompare(b.name));renderProducts(list,grid);}[search,category,sort].forEach(el=>el.addEventListener("input",update));update();}
+function setupCategoryPages(){renderProducts(products.filter(p=>p.category==="Burgers"),document.getElementById("burgerGrid"));renderProducts(products.filter(p=>p.category==="Drinks"),document.getElementById("drinkGrid"));}
+function showMessage(element,text,type){if(!element)return;element.textContent=text;element.className="message show "+type;}
+function validForm(form){if(!form.checkValidity()){form.reportValidity();return false;}return true;}
+function setupEnquiry(){const form=document.getElementById("enquiryForm");if(!form)return;const choice=document.getElementById("productChoice");products.forEach(p=>{const option=document.createElement("option");option.value=p.name;option.textContent=p.name+" – "+money(p.price);choice.appendChild(option);});form.addEventListener("submit",event=>{event.preventDefault();if(!validForm(form))return;const data=new FormData(form);const name=data.get("name");const message=`Thank you, ${name}. Your ${data.get("type").toLowerCase()} enquiry has been checked on this website. Please contact the business by phone or email to confirm availability and the next steps. This demonstration does not send data to a server.`;showMessage(document.getElementById("enquiryMessageStatus"),message,"success");form.reset();});}
+function setupContact(){const form=document.getElementById("contactForm");if(!form)return;form.addEventListener("submit",event=>{event.preventDefault();if(!validForm(form))return;const d=new FormData(form);const subject=encodeURIComponent("Kelly's Burger – "+d.get("type"));const body=encodeURIComponent(`Name: ${d.get("name")}\nEmail: ${d.get("email")}\nPhone: ${d.get("phone")||"Not provided"}\nMessage type: ${d.get("type")}\n\nMessage:\n${d.get("message")}`);showMessage(document.getElementById("contactMessageStatus"),"Your message has been validated. Your email application will open so you can review and send it. The website does not send email automatically.","success");window.location.href=`mailto:tebogorankoko@gmail.com?subject=${subject}&body=${body}`;});}
+function setupAccordion(){document.querySelectorAll(".accordion-button").forEach(button=>button.addEventListener("click",()=>{const panel=button.nextElementSibling;const open=panel.classList.toggle("open");button.setAttribute("aria-expanded",String(open));}));}
+function setupLightbox(){const box=document.getElementById("lightbox"),image=document.getElementById("lightboxImage"),close=document.getElementById("closeLightbox");if(!box)return;document.addEventListener("click",event=>{const img=event.target.closest(".product-image img");if(img){image.src=img.src;image.alt=img.alt;box.classList.add("open");}});close.addEventListener("click",()=>box.classList.remove("open"));box.addEventListener("click",e=>{if(e.target===box)box.classList.remove("open");});document.addEventListener("keydown",e=>{if(e.key==="Escape")box.classList.remove("open");});}
+function setupLogin(){const form=document.getElementById("loginForm");if(!form)return;form.addEventListener("submit",e=>{e.preventDefault();if(!validForm(form))return;showMessage(document.getElementById("loginStatus"),"Demo login details accepted. No password has been stored or transmitted.","success");form.reset();});}
+document.addEventListener("DOMContentLoaded",()=>{setupProducts();setupCategoryPages();setupEnquiry();setupContact();setupAccordion();setupLightbox();setupLogin();});
